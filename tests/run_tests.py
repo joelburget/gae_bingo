@@ -8,6 +8,8 @@ import time
 import urllib
 import urllib2
 
+from gae_bingo.redirect import sign
+
 # TODO: convert this unit test file to the correct unit
 # test pattern used by the rest of our codebase
 TEST_GAE_HOST = "http://localhost:8111"
@@ -170,12 +172,20 @@ def run_tests():
            "conversion_name=chimps_conversion_1&" + 
            "conversion_name=chimps_conversion_2")
 
+    redirect_url_baboons = test_response("create_baboons_signed_redirect_url")
+    assert(redirect_url_baboons ==
+           "/gae_bingo/redirect?continue=/gae_bingo"
+           "&conversion_name=baboons"
+           "&signature=%s" % sign("/gae_bingo", "planet of the apes"))
+
     # Test participating in monkeys and chimps once,
     # and use previously constructed redirect URLs to convert
     assert(test_response("participate_in_monkeys") in [True, False])
     test_response(use_last_cookies=True, url=redirect_url_monkeys)
     assert(test_response("participate_in_chimpanzees") in [True, False])
     test_response(use_last_cookies=True, url=redirect_url_chimps)
+    assert test_response("participate_in_baboons") in [True, False]
+    test_response(use_last_cookies=True, url=redirect_url_baboons)
 
     # Make sure there's a single participant and conversion in monkeys
     assert(test_response("count_participants_in",
@@ -198,6 +208,14 @@ def run_tests():
                                 "count_conversions_in",
                                 {"experiment_name":
                                  "chimpanzees (chimps_conversion_2)"})
+    assert(sum(dict_conversions_server.values()) == 1)
+
+    # Make sure there's a single participant and conversion in baboons
+    assert(test_response("count_participants_in",
+                        {"experiment_name": "baboons"})
+           == 1)
+    dict_conversions_server = test_response("count_conversions_in",
+                                           {"experiment_name": "baboons"})
     assert(sum(dict_conversions_server.values()) == 1)
 
     # Delete all experiments for next round of tests

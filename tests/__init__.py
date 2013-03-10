@@ -20,6 +20,8 @@ from gae_bingo.models import ConversionTypes
 # TODO(kamens): this whole file and ad-hoc test process should be replaced w/
 # our real unit testing or end-to-end testing framework.
 
+ultra_secret_salt = "planet of the apes"
+
 class RunStep(RequestHandler):
 
     def get(self):
@@ -76,6 +78,8 @@ class RunStep(RequestHandler):
             v = self.create_monkeys_redirect_url()
         elif step == "create_chimps_redirect_url":
             v = self.create_chimps_redirect_url()
+        elif step == "create_baboon_signed_redirect_url":
+            v = self.create_baboon_signed_redirect_url()
         elif step == "archive_monkeys":
             v = self.archive_monkeys()
 
@@ -116,6 +120,10 @@ class RunStep(RequestHandler):
     def participate_in_chimpanzees(self):
         # Multiple conversions test
         return ab_test("chimpanzees", conversion_name=["chimps_conversion_1", "chimps_conversion_2"])
+
+    def participate_in_baboons(self):
+        # Multiple conversions test
+        return ab_test("baboons")
 
     def participate_in_crocodiles(self):
         # Weighted test
@@ -163,6 +171,10 @@ class RunStep(RequestHandler):
         return create_redirect_url("/gae_bingo",
                                   ["chimps_conversion_1",
                                    "chimps_conversion_2"])
+
+    def create_baboons_signed_redirect_url(self):
+        return create_redirect_url("/gae_bingo", "baboons",
+                                   salt=ultra_secret_salt)
 
     def end_and_choose(self):
         bingo_cache = BingoCache.get()

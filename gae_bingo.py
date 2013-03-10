@@ -10,6 +10,7 @@ from .models import create_experiment_and_alternatives, ConversionTypes
 from .identity import identity
 from .config import can_control_experiments
 from .cookies import get_cookie_value
+import redirect
 
 def create_unique_experiments(canonical_name,
                               alternative_params,
@@ -392,7 +393,7 @@ def modulo_choose(experiment_hashable_name, alternatives, identity):
         if index_weight >= current_weight:
             return alternative
 
-def create_redirect_url(destination, conversion_names):
+def create_redirect_url(destination, conversion_names, salt=None):
     """ Create a URL that redirects to destination after scoring conversions
     in all listed conversion names
     """
@@ -404,6 +405,9 @@ def create_redirect_url(destination, conversion_names):
 
     for conversion_name in conversion_names:
         result += "&conversion_name=%s" % urllib.quote(conversion_name)
+
+    if salt is not None:
+        result += "&signature=%s" % redirect.sign(destination, salt)
 
     return result
 
